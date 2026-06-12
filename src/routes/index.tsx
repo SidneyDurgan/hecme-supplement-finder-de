@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
-import { Send, Square, Zap, Moon, Shield, Brain, Dumbbell, Heart, Wind, Bone } from 'lucide-react'
+import { Send, Square, Zap, Moon, Shield, Brain, Dumbbell, Heart, Wind, Bone, RotateCcw } from 'lucide-react'
 import { Streamdown } from 'streamdown'
 
 import { useAIChat } from '@/lib/ai-hook'
@@ -15,6 +15,19 @@ const GOALS = [
   { label: 'Stress & Nerven', icon: Heart, prompt: 'Ich stehe unter starkem Stress und fühle mich ausgebrannt. Welche Adaptogene und Supplemente helfen?' },
   { label: 'Gelenke & Knochen', icon: Bone, prompt: 'Ich habe Gelenkbeschwerden und möchte meine Knochen langfristig schützen. Was empfiehlst du?' },
   { label: 'Haut & Haare', icon: Wind, prompt: 'Ich habe Haarausfall und Hautprobleme. Welche Supplemente können von innen helfen?' },
+]
+
+const CATEGORIES = [
+  { label: 'Energie & Schlaf', symptoms: ['Morgenmüdigkeit', 'Antriebslosigkeit', 'Erschöpfung', 'Schlafprobleme', 'Einschlafschwierigkeiten', 'Durchschlafschwierigkeiten', 'Nachmittagstief', 'Chronische Müdigkeit'] },
+  { label: 'Stimmung & Psyche', symptoms: ['Angstzustände', 'Stimmungsschwankungen', 'Reizbarkeit', 'Konzentrationsprobleme', 'Vergesslichkeit', 'Depressive Verstimmung', 'Innere Unruhe', 'Burnout-Gefühl', 'Nervosität'] },
+  { label: 'Hormone & Stoffwechsel', symptoms: ['Libidoverlust', 'Nachtschweiß', 'Hitzewallungen', 'PMS-Beschwerden', 'Wassereinlagerungen', 'Gewichtszunahme trotz Diät', 'Kältegefühl', 'Schilddrüsenprobleme'] },
+  { label: 'Schmerzen & Entzündung', symptoms: ['Kopfschmerzen', 'Muskelschmerzen', 'Gelenkschmerzen', 'Rückenschmerzen', 'Migräne', 'Chronische Entzündungen', 'Nackenschmerzen'] },
+  { label: 'Muskel & Sport', symptoms: ['Muskelschwäche', 'Muskelkrämpfe', 'Langsame Regeneration', 'Leistungsabfall Sport', 'Ausdauerverlust', 'Muskelzittern', 'Schwere Beine'] },
+  { label: 'Immunsystem', symptoms: ['Immunschwäche', 'Häufige Erkältungen', 'Langsame Wundheilung', 'Häufige Infekte', 'Allergien', 'Autoimmunprobleme'] },
+  { label: 'Haut, Haare & Nägel', symptoms: ['Haarausfall', 'Hautprobleme', 'Trockene Haut', 'Brüchige Nägel', 'Akne', 'Faltenbildung', 'Schuppige Haut', 'Pigmentflecken'] },
+  { label: 'Verdauung', symptoms: ['Verdauungsprobleme', 'Blähungen', 'Durchfall', 'Verstopfung', 'Reizdarm', 'Nahrungsmittelunverträglichkeiten', 'Übelkeit', 'Sodbrennen'] },
+  { label: 'Herz & Kreislauf', symptoms: ['Herzrasen', 'Bluthochdruck', 'Schwindel', 'Kurzatmigkeit', 'Kalte Hände/Füße', 'Ohnmachtsgefühle'] },
+  { label: 'Knochen & Gelenke', symptoms: ['Osteoporose-Risiko', 'Gelenksteifheit', 'Knochenschmerzen', 'Arthrose-Beschwerden', 'Bandscheibenprobleme'] },
 ]
 
 function CapsuleIcon() {
@@ -83,6 +96,25 @@ function Messages({ messages, isLoading }: { messages: ChatMessages; isLoading: 
 }
 
 function EmptyState({ onSelect }: { onSelect: (prompt: string) => void }) {
+  const [mode, setMode] = useState<'ziele' | 'symptome'>('ziele')
+  const [activeCat, setActiveCat] = useState(CATEGORIES[0].label)
+  const [selected, setSelected] = useState<string[]>([])
+
+  function toggleSymptom(s: string) {
+    setSelected(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s])
+  }
+
+  function analyzeSymptoms() {
+    if (selected.length === 0) return
+    onSelect(
+      `Ich habe folgende Beschwerden: ${selected.join(', ')}. ` +
+      `Welche HEC+ME Supplemente passen zu meinen Symptomen und warum? ` +
+      `Bitte erkläre auch, welche Kombinationen sinnvoll sind.`
+    )
+  }
+
+  const currentSymptoms = CATEGORIES.find(c => c.label === activeCat)?.symptoms ?? []
+
   return (
     <div className="empty-state">
       <div className="empty-hero">
@@ -96,21 +128,71 @@ function EmptyState({ onSelect }: { onSelect: (prompt: string) => void }) {
           Beschreibe deine Beschwerden oder wähle ein Ziel – du bekommst evidenzbasierte, auf dich zugeschnittene Empfehlungen.
         </p>
       </div>
-      <div className="goals-grid">
-        {GOALS.map((goal) => {
-          const Icon = goal.icon
-          return (
-            <button
-              key={goal.label}
-              className="goal-chip"
-              onClick={() => onSelect(goal.prompt)}
-            >
-              <Icon size={15} strokeWidth={1.8} />
-              <span>{goal.label}</span>
-            </button>
-          )
-        })}
+
+      <div className="mode-tabs">
+        <button className={`mode-tab ${mode === 'ziele' ? 'active' : ''}`} onClick={() => setMode('ziele')}>
+          Nach Ziel
+        </button>
+        <button className={`mode-tab ${mode === 'symptome' ? 'active' : ''}`} onClick={() => setMode('symptome')}>
+          Nach Symptomen
+        </button>
       </div>
+
+      {mode === 'ziele' ? (
+        <div className="goals-grid">
+          {GOALS.map((goal) => {
+            const Icon = goal.icon
+            return (
+              <button
+                key={goal.label}
+                className="goal-chip"
+                onClick={() => onSelect(goal.prompt)}
+              >
+                <Icon size={15} strokeWidth={1.8} />
+                <span>{goal.label}</span>
+              </button>
+            )
+          })}
+        </div>
+      ) : (
+        <div className="symptom-section">
+          <div className="cat-row">
+            {CATEGORIES.map((c) => (
+              <button
+                key={c.label}
+                className={`cat-pill ${activeCat === c.label ? 'active' : ''}`}
+                onClick={() => setActiveCat(c.label)}
+              >
+                {c.label}
+              </button>
+            ))}
+          </div>
+          <div className="symptom-grid">
+            {currentSymptoms.map((s) => (
+              <button
+                key={s}
+                className={`symptom-chip ${selected.includes(s) ? 'selected' : ''}`}
+                onClick={() => toggleSymptom(s)}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+          {selected.length > 0 && (
+            <div className="selected-bar">
+              <span className="selected-count">{selected.length} ausgewählt:</span>
+              <span className="selected-list">{selected.join(', ')}</span>
+              <button className="clear-btn" onClick={() => setSelected([])}>Leeren</button>
+            </div>
+          )}
+          <button className="analyze-btn" disabled={selected.length === 0} onClick={analyzeSymptoms}>
+            {selected.length === 0
+              ? 'Symptome auswählen'
+              : `${selected.length} Symptom${selected.length > 1 ? 'e' : ''} analysieren →`}
+          </button>
+        </div>
+      )}
+
       <p className="disclaimer">
         Nur zur Information. Kein Ersatz für medizinische Beratung. Sprich bei gesundheitlichen Beschwerden mit deinem Arzt.
       </p>
@@ -118,10 +200,14 @@ function EmptyState({ onSelect }: { onSelect: (prompt: string) => void }) {
   )
 }
 
-function Home() {
+function ChatArea({ onActiveChange }: { onActiveChange: (active: boolean) => void }) {
   const [input, setInput] = useState('')
   const { messages, sendMessage, isLoading, stop } = useAIChat()
   const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    onActiveChange(messages.length > 0)
+  }, [messages.length, onActiveChange])
 
   function handleSend(text: string) {
     if (!text.trim() || isLoading) return
@@ -131,20 +217,7 @@ function Home() {
   }
 
   return (
-    <div className="app-shell">
-      <header className="app-header">
-        <div className="header-inner">
-          <div className="brand">
-            <div className="brand-icon" aria-hidden="true"><CapsuleIcon /></div>
-            <div className="brand-text">
-              <span className="brand-name">HEC<span className="brand-plus">+</span>ME</span>
-              <span className="brand-tagline">Supplement Finder</span>
-            </div>
-          </div>
-          <div className="header-badge">Powered by Claude</div>
-        </div>
-      </header>
-
+    <>
       <main className="chat-main">
         {messages.length === 0 ? (
           <EmptyState onSelect={(p) => handleSend(p)} />
@@ -191,10 +264,47 @@ function Home() {
           </form>
         </div>
       </footer>
+    </>
+  )
+}
+
+function Home() {
+  const [sessionKey, setSessionKey] = useState(0)
+  const [chatActive, setChatActive] = useState(false)
+
+  function resetChat() {
+    setSessionKey(k => k + 1)
+    setChatActive(false)
+  }
+
+  return (
+    <div className="app-shell">
+      <header className="app-header">
+        <div className="header-inner">
+          <div className="brand">
+            <div className="brand-icon" aria-hidden="true"><CapsuleIcon /></div>
+            <div className="brand-text">
+              <span className="brand-name">HEC<span className="brand-plus">+</span>ME</span>
+              <span className="brand-tagline">Supplement Finder</span>
+            </div>
+          </div>
+          <div className="header-right">
+            {chatActive && (
+              <button className="reset-header-btn" onClick={resetChat}>
+                <RotateCcw size={13} strokeWidth={2} />
+                Neue Suche
+              </button>
+            )}
+            <div className="header-badge">Powered by Claude</div>
+          </div>
+        </div>
+      </header>
+
+      <ChatArea key={sessionKey} onActiveChange={setChatActive} />
     </div>
   )
 }
 
-export const Route = createFileRoute('/')(({
+export const Route = createFileRoute('/')({
   component: Home,
-}))
+})

@@ -441,3 +441,172 @@ body::before {
   .messages-container { padding: 16px 12px 20px; }
   .input-inner { padding: 10px 12px 14px; }
 }
+
+/* ── Mode tabs (Ziel/Symptome) ──────────────────────────── */
+.mode-tabs {
+  display: flex;
+  gap: 6px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 4px;
+}
+
+.mode-tab {
+  padding: 8px 20px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.mode-tab.active {
+  background: var(--accent);
+  color: white;
+}
+
+/* ── Symptom section ────────────────────────────────────── */
+.symptom-section {
+  width: 100%;
+  max-width: 680px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cat-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+}
+
+.cat-pill {
+  padding: 6px 13px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.cat-pill:hover { border-color: var(--accent); color: var(--accent); }
+
+.cat-pill.active {
+  background: var(--accent-glow);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.symptom-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  min-height: 80px;
+}
+
+.symptom-chip {
+  padding: 8px 14px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--cream-dim);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.symptom-chip:hover { border-color: var(--accent); color: var(--accent); }
+
+.symptom-chip.selected {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+  font-weight: 600;
+}
+
+.selected-bar {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  font-size: 12.5px;
+}
+
+.selected-count { color: var(--accent); font-weight: 700; white-space: nowrap; }
+.selected-list { color: var(--cream-dim); flex: 1; min-width: 200px; }
+
+.clear-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: underline;
+  font-family: 'DM Sans', system-ui, sans-serif;
+}
+
+.clear-btn:hover { color: var(--accent); }
+
+.analyze-btn {
+  width: 100%;
+  padding: 14px;
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius);
+  color: white;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.analyze-btn:hover:not(:disabled) { background: #e06800; }
+.analyze-btn:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
+
+/* ── Header: Neue Suche Button ──────────────────────────── */
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.reset-header-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  color: var(--cream-dim);
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.reset-header-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+@media (max-width: 600px) {
+  .reset-header-btn span { display: none; }
+  .selected-list { display: none; }
+}
