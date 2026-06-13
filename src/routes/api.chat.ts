@@ -68,6 +68,37 @@ WICHTIGE HINWEISE (natürlich einweben, nicht als Rechtsblock):
 
 TON: Sachkundiger Freund mit fundiertem Ernährungswissen. Warm, präzise, evidenzbasiert. Kein Hype, keine Übertreibung. Lücken in der Evidenz offen ansprechen. Antworten auf Deutsch.`
 
+// ── Einfaches In-Memory Rate-Limit (Kostenschutz) ──────────────
+// Begrenzt Anfragen pro IP. Hinweis: läuft pro Server-Instanz,
+// für stärkeren Schutz später auf Upstash/Redis umstellen.
+const RATE_LIMIT_MAX = 8           // max. Anfragen
+const RATE_LIMIT_WINDOW_MS = 60_000 // pro 60 Sekunden
+const rateMap = new Map<string, number[]>()
+
+function getClientIp(request: Request): string {
+  const fwd = request.headers.get('x-forwarded-for')
+  if (fwd) return fwd.split(',')[0].trim()
+  return request.headers.get('x-real-ip') || 'unknown'
+}
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now()
+  const hits = (rateMap.get(ip) || []).filter((t) => now - t < RATE_LIMIT_WINDOW_MS)
+  if (hits.length >= RATE_LIMIT_MAX) {
+    rateMap.set(ip, hits)
+    return true
+  }
+  hits.push(now)
+  rateMap.set(ip, hits)
+  // gelegentlich aufräumen, damit die Map nicht unbegrenzt wächst
+  if (rateMap.size > 5000) {
+    for (const [key, times] of rateMap) {
+      if (times.every((t) => now - t > RATE_LIMIT_WINDOW_MS)) rateMap.delete(key)
+    }
+  }
+  return false
+}
+
 export const Route = createFileRoute('/api/chat')({
   server: {
     handlers: {
@@ -76,6 +107,24 @@ export const Route = createFileRoute('/api/chat')({
 
         if (requestSignal.aborted) {
           return new Response(null, { status: 499 })
+        }
+
+        // Rate-Limit prüfen
+        const ip = getClientIp(request)
+        if (isRateLimited(ip)) {
+          return new Response(
+            JSON.stringify({
+              error: 'rate_limited',
+              message: 'Zu viele Anfragen. Bitte warte einen Moment und versuche es erneut.',
+            }),
+            {
+              status: 429,
+              headers: {
+                'Content-Type': 'application/json',
+                'Retry-After': '60',
+              },
+            },
+          )
         }
 
         const abortController = new AbortController()

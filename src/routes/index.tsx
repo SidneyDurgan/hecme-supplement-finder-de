@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
 import { Send, Square, Zap, Moon, Shield, Brain, Dumbbell, Heart, Wind, Bone, RotateCcw, Target, Stethoscope, Copy, Check, Printer, ShoppingBag } from 'lucide-react'
 import { Streamdown } from 'streamdown'
 
@@ -444,6 +444,10 @@ function EmptyState({ onSelect }: { onSelect: (prompt: string) => void }) {
 
       <p className="disclaimer">
         Nur zur Information. Kein Ersatz für medizinische Beratung. Sprich bei gesundheitlichen Beschwerden mit deinem Arzt.
+        <br />
+        <Link to="/impressum" className="disclaimer-link">Impressum</Link>
+        {' · '}
+        <Link to="/datenschutz" className="disclaimer-link">Datenschutz</Link>
       </p>
     </div>
   )
@@ -451,7 +455,7 @@ function EmptyState({ onSelect }: { onSelect: (prompt: string) => void }) {
 
 function ChatArea({ onActiveChange, onReset }: { onActiveChange: (active: boolean) => void; onReset: () => void }) {
   const [input, setInput] = useState('')
-  const { messages, sendMessage, isLoading, stop } = useAIChat()
+  const { messages, sendMessage, isLoading, stop, error } = useAIChat()
   const inputRef = useRef<HTMLInputElement>(null)
 
   const hasMessages = messages.length > 0
@@ -479,6 +483,13 @@ function ChatArea({ onActiveChange, onReset }: { onActiveChange: (active: boolea
 
       <footer className="input-footer">
         <div className="input-inner">
+          {error && !isLoading && (
+            <div className="error-note">
+              {/rate|429|many|limit/i.test(error.message)
+                ? 'Zu viele Anfragen in kurzer Zeit. Bitte warte einen Moment und versuche es erneut.'
+                : 'Es gab ein Problem bei der Verbindung. Bitte versuche es erneut.'}
+            </div>
+          )}
           {isLoading && (
             <div className="stop-row">
               <button onClick={stop} className="stop-btn">
@@ -527,9 +538,57 @@ function ChatArea({ onActiveChange, onReset }: { onActiveChange: (active: boolea
   )
 }
 
+const CONSENT_KEY = 'hecme_consent_v1'
+
+function ConsentOverlay({ onAccept }: { onAccept: () => void }) {
+  return (
+    <div className="consent-overlay">
+      <div className="consent-box">
+        <div className="consent-icon" aria-hidden="true"><CapsuleIcon /></div>
+        <h2 className="consent-title">Bevor es losgeht</h2>
+        <p className="consent-text">
+          Dieser Supplement-Finder gibt dir auf Basis deiner Angaben eine persönliche, KI-gestützte
+          Empfehlung. Deine Eingaben können <strong>Gesundheitsangaben</strong> enthalten und werden zur
+          Beantwortung an unseren KI-Dienstleister <strong>Anthropic (USA)</strong> übermittelt. Sie werden
+          von uns nicht dauerhaft gespeichert.
+        </p>
+        <p className="consent-text">
+          Die Empfehlungen ersetzen keine ärztliche Beratung. Mit „Einverstanden" willigst du in diese
+          Verarbeitung ein. Details findest du in unserer{' '}
+          <Link to="/datenschutz" className="consent-link">Datenschutzerklärung</Link>.
+        </p>
+        <button className="consent-accept" onClick={onAccept}>
+          Einverstanden &amp; weiter
+        </button>
+        <p className="consent-foot">
+          Du kannst deine Einwilligung jederzeit widerrufen, indem du die Nutzung beendest.
+        </p>
+      </div>
+    </div>
+  )
+}
+
 function Home() {
   const [sessionKey, setSessionKey] = useState(0)
   const [chatActive, setChatActive] = useState(false)
+  const [consented, setConsented] = useState(true)
+
+  useEffect(() => {
+    try {
+      setConsented(localStorage.getItem(CONSENT_KEY) === 'true')
+    } catch {
+      setConsented(false)
+    }
+  }, [])
+
+  function acceptConsent() {
+    try {
+      localStorage.setItem(CONSENT_KEY, 'true')
+    } catch {
+      // localStorage nicht verfügbar – Zustimmung gilt für diese Sitzung
+    }
+    setConsented(true)
+  }
 
   function resetChat() {
     setSessionKey(k => k + 1)
@@ -538,6 +597,7 @@ function Home() {
 
   return (
     <div className="app-shell">
+      {!consented && <ConsentOverlay onAccept={acceptConsent} />}
       <header className="app-header">
         <div className="header-inner">
           <button className="brand brand-button" onClick={resetChat} title="Zurück zur Startseite">
