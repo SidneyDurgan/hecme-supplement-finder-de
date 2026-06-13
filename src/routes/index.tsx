@@ -271,11 +271,69 @@ function EmptyState({ onSelect }: { onSelect: (prompt: string) => void }) {
   return (
     <div className="empty-state">
       <div className="empty-hero">
+        <div className="hero-illustration" aria-hidden="true">
+          <svg viewBox="0 0 480 200" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+            <defs>
+              <linearGradient id="hSky" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#1b2128" />
+                <stop offset="58%" stopColor="#222a33" />
+                <stop offset="100%" stopColor="#2b343f" />
+              </linearGradient>
+              <linearGradient id="hSun" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#ff9a3d" />
+                <stop offset="100%" stopColor="#C85A00" />
+              </linearGradient>
+              <linearGradient id="hMtnBack" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#3a4754" />
+                <stop offset="100%" stopColor="#222a33" />
+              </linearGradient>
+              <linearGradient id="hMtnFront" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#2a333d" />
+                <stop offset="100%" stopColor="#161a1f" />
+              </linearGradient>
+              <linearGradient id="hLake" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#ff9a3d" stopOpacity="0.38" />
+                <stop offset="100%" stopColor="#222a33" stopOpacity="0.08" />
+              </linearGradient>
+            </defs>
+
+            <rect width="480" height="200" fill="url(#hSky)" />
+
+            <circle cx="250" cy="68" r="40" fill="url(#hSun)" opacity="0.9" />
+            <circle cx="250" cy="68" r="56" fill="#ff9a3d" opacity="0.1" />
+            <circle cx="250" cy="68" r="72" fill="#ff9a3d" opacity="0.045" />
+
+            <path d="M0 132 L70 80 L130 122 L200 62 L270 120 L340 74 L410 124 L480 86 L480 200 L0 200 Z" fill="url(#hMtnBack)" opacity="0.85" />
+            <path d="M0 160 L90 112 L170 152 L250 102 L330 150 L420 110 L480 150 L480 200 L0 200 Z" fill="url(#hMtnFront)" />
+            <ellipse cx="240" cy="184" rx="240" ry="18" fill="url(#hLake)" />
+
+            <g transform="translate(232 98) rotate(-16)">
+              <g fill="#0d1116">
+                <g stroke="#0d1116" strokeLinecap="round" fill="none">
+                  <path d="M9 10 L42 4" strokeWidth="13" />
+                  <path d="M42 4 L70 -3" strokeWidth="9" />
+                  <path d="M2 14 L-10 38" strokeWidth="13" />
+                  <path d="M-10 38 L14 44" strokeWidth="9" />
+                  <path d="M8 -26 L36 -36" strokeWidth="8.5" />
+                  <path d="M36 -36 L57 -50" strokeWidth="6" />
+                  <path d="M-2 -26 L-30 -34" strokeWidth="8.5" />
+                  <path d="M-30 -34 L-50 -50" strokeWidth="6" />
+                </g>
+                <path d="M57 -50 q7 -5 12 -1 q3 4 -2 7 q-6 4 -12 1 q-3 -4 2 -7 Z" />
+                <path d="M-50 -50 q-7 -5 -12 -1 q-3 4 2 7 q6 4 12 1 q3 -4 -2 -7 Z" />
+                <path d="M70 -3 Q78 -5 87 -10 Q90 -12 88 -8 Q84 -2 74 2 Q69 3 68 0 Z" />
+                <path d="M14 44 q9 1 11 6 q1 4 -4 5 l-10 -3 q-3 -3 3 -8 Z" />
+                <path d="M0 -31 L22 -28 Q29 -8 23 14 Q18 22 10 21 Q2 20 0 11 Q-3 -11 0 -31 Z" />
+                <circle cx="11" cy="-42" r="9.5" />
+              </g>
+            </g>
+          </svg>
+        </div>
         <div className="brand-capsule" aria-hidden="true">
           <CapsuleIcon />
         </div>
         <h1 className="hero-headline">
-          Finde dein <em>perfektes</em><br />Supplement
+          Finde dein <em>passendes</em><br />Supplement
         </h1>
         <p className="hero-sub">
           Wähle deinen Weg: Suche nach einem <strong>Ziel</strong>, das du erreichen möchtest – oder nach konkreten <strong>Symptomen</strong>, die dich belasten.
