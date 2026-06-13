@@ -442,84 +442,149 @@ body::before {
   .input-inner { padding: 10px 12px 14px; }
 }
 
-/* ── Mode tabs (Ziel/Symptome) ──────────────────────────── */
-.mode-tabs {
-  display: flex;
-  gap: 6px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-pill);
-  padding: 4px;
-}
-
-.mode-tab {
-  padding: 8px 20px;
+/* ── Brand als Button (klickbar → Startseite) ───────────── */
+.brand-button {
+  background: none;
   border: none;
-  background: transparent;
-  color: var(--muted);
-  font-size: 13px;
-  font-weight: 600;
-  font-family: 'DM Sans', system-ui, sans-serif;
-  border-radius: var(--radius-pill);
   cursor: pointer;
-  transition: all 0.15s;
+  font-family: inherit;
+  padding: 4px;
+  margin: -4px;
+  border-radius: var(--radius-sm);
+  transition: opacity 0.15s;
+}
+.brand-button:hover { opacity: 0.75; }
+
+/* ── Modus-Umschalter: zwei getrennte Karten ────────────── */
+.mode-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  width: 100%;
+  max-width: 520px;
 }
 
-.mode-tab.active {
-  background: var(--accent);
-  color: white;
+.mode-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 18px;
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--cream-dim);
+  cursor: pointer;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  text-align: left;
+  transition: all 0.18s;
 }
 
-/* ── Symptom section ────────────────────────────────────── */
+.mode-card svg { color: var(--muted); flex-shrink: 0; transition: color 0.18s; }
+
+.mode-card:hover {
+  border-color: var(--border-light);
+  background: #1c1c1c;
+}
+
+.mode-card.active {
+  border-color: var(--accent);
+  background: var(--accent-glow);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.mode-card.active svg { color: var(--accent); }
+
+.mode-card-text { display: flex; flex-direction: column; gap: 2px; line-height: 1.2; }
+.mode-card-title { font-size: 14px; font-weight: 700; color: var(--cream); }
+.mode-card.active .mode-card-title { color: var(--accent); }
+.mode-card-sub { font-size: 11.5px; color: var(--muted); }
+
+/* ── Symptom-Bereich mit nummerierten Schritten ─────────── */
 .symptom-section {
   width: 100%;
   max-width: 680px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 22px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
 }
 
+.symptom-step { display: flex; flex-direction: column; gap: 12px; }
+
+.step-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--cream-dim);
+}
+
+.step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* Schritt 1: Bereiche (Überbegriffe) — abgesetzte Pills */
 .cat-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  justify-content: center;
+  gap: 7px;
 }
 
 .cat-pill {
-  padding: 6px 13px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-pill);
+  padding: 8px 15px;
+  background: transparent;
+  border: 1.5px solid var(--border-light);
+  border-radius: var(--radius-sm);
   color: var(--muted);
-  font-size: 12px;
-  font-weight: 500;
+  font-size: 12.5px;
+  font-weight: 600;
   font-family: 'DM Sans', system-ui, sans-serif;
   cursor: pointer;
   transition: all 0.15s;
 }
 
-.cat-pill:hover { border-color: var(--accent); color: var(--accent); }
+.cat-pill:hover { border-color: var(--accent); color: var(--cream); }
 
 .cat-pill.active {
-  background: var(--accent-glow);
+  background: #2a1808;
   border-color: var(--accent);
   color: var(--accent);
 }
 
+/* Trennlinie zwischen den Schritten */
+.symptom-step + .symptom-step {
+  border-top: 1px dashed var(--border);
+  padding-top: 20px;
+}
+
+/* Schritt 2: konkrete Symptome — runde, gefüllte Chips (klar anders als Überbegriffe) */
 .symptom-grid {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  justify-content: center;
   min-height: 80px;
 }
 
 .symptom-chip {
-  padding: 8px 14px;
-  background: var(--card);
+  padding: 9px 16px;
+  background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-pill);
   color: var(--cream-dim);
   font-size: 13px;
   font-weight: 500;
@@ -542,8 +607,8 @@ body::before {
   align-items: baseline;
   gap: 8px;
   flex-wrap: wrap;
-  background: var(--card);
-  border: 1px solid var(--border);
+  background: var(--surface);
+  border: 1px solid var(--border-light);
   border-radius: var(--radius);
   padding: 12px 16px;
   font-size: 12.5px;
@@ -561,7 +626,6 @@ body::before {
   text-decoration: underline;
   font-family: 'DM Sans', system-ui, sans-serif;
 }
-
 .clear-btn:hover { color: var(--accent); }
 
 .analyze-btn {
@@ -577,16 +641,11 @@ body::before {
   cursor: pointer;
   transition: background 0.15s;
 }
-
 .analyze-btn:hover:not(:disabled) { background: #e06800; }
 .analyze-btn:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
 
-/* ── Header: Neue Suche Button ──────────────────────────── */
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
+/* ── Header: Neue Suche ─────────────────────────────────── */
+.header-right { display: flex; align-items: center; gap: 10px; }
 
 .reset-header-btn {
   display: flex;
@@ -603,10 +662,138 @@ body::before {
   cursor: pointer;
   transition: all 0.15s;
 }
-
 .reset-header-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── Input-Zeile mit Neue-Suche unten ───────────────────── */
+.input-row { display: flex; align-items: center; gap: 10px; }
+
+.reset-inline-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 11px 14px;
+  background: var(--card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-pill);
+  color: var(--cream-dim);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.reset-inline-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+.input-row .input-form { flex: 1; }
 
 @media (max-width: 600px) {
   .reset-header-btn span { display: none; }
+  .reset-inline-btn span { display: none; }
   .selected-list { display: none; }
+  .mode-switch { grid-template-columns: 1fr; }
+  .symptom-section { padding: 16px; }
+}
+
+/* ── Aktionsleiste unter KI-Antworten (Kopieren/Drucken/Shop) ── */
+.message-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.msg-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 13px;
+  background: var(--surface);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-pill);
+  color: var(--cream-dim);
+  font-size: 12.5px;
+  font-weight: 600;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.15s;
+}
+
+.msg-action-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Shop-Button hervorheben */
+.msg-action-shop {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+.msg-action-shop:hover {
+  background: #e06800;
+  border-color: #e06800;
+  color: white;
+}
+
+/* ── Symptom-Untergruppen (Unterbereiche) ───────────────── */
+.symptom-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.symptom-group {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.symptom-group-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+  opacity: 0.85;
+  padding-left: 2px;
+}
+
+/* ── "bald"-Badge an Kategorie-Pills (Produkte in Planung) ── */
+.cat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.planned-dot {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--bg);
+  background: var(--accent);
+  padding: 1px 6px;
+  border-radius: var(--radius-pill);
+  line-height: 1.5;
+}
+
+.cat-pill.active .planned-dot {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+/* ── Hinweis bei geplanten Bereichen ────────────────────── */
+.planned-note {
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--cream-dim);
+  background: var(--accent-glow);
+  border: 1px solid rgba(200, 90, 0, 0.25);
+  border-radius: var(--radius-sm);
+  padding: 11px 14px;
 }

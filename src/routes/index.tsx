@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
-import { Send, Square, Zap, Moon, Shield, Brain, Dumbbell, Heart, Wind, Bone, RotateCcw } from 'lucide-react'
+import { Send, Square, Zap, Moon, Shield, Brain, Dumbbell, Heart, Wind, Bone, RotateCcw, Target, Stethoscope, Copy, Check, Printer, ShoppingBag } from 'lucide-react'
 import { Streamdown } from 'streamdown'
 
 import { useAIChat } from '@/lib/ai-hook'
@@ -17,17 +17,91 @@ const GOALS = [
   { label: 'Haut & Haare', icon: Wind, prompt: 'Ich habe Haarausfall und Hautprobleme. Welche Supplemente können von innen helfen?' },
 ]
 
-const CATEGORIES = [
-  { label: 'Energie & Schlaf', symptoms: ['Morgenmüdigkeit', 'Antriebslosigkeit', 'Erschöpfung', 'Schlafprobleme', 'Einschlafschwierigkeiten', 'Durchschlafschwierigkeiten', 'Nachmittagstief', 'Chronische Müdigkeit'] },
-  { label: 'Stimmung & Psyche', symptoms: ['Angstzustände', 'Stimmungsschwankungen', 'Reizbarkeit', 'Konzentrationsprobleme', 'Vergesslichkeit', 'Depressive Verstimmung', 'Innere Unruhe', 'Burnout-Gefühl', 'Nervosität'] },
-  { label: 'Hormone & Stoffwechsel', symptoms: ['Libidoverlust', 'Nachtschweiß', 'Hitzewallungen', 'PMS-Beschwerden', 'Wassereinlagerungen', 'Gewichtszunahme trotz Diät', 'Kältegefühl', 'Schilddrüsenprobleme'] },
-  { label: 'Schmerzen & Entzündung', symptoms: ['Kopfschmerzen', 'Muskelschmerzen', 'Gelenkschmerzen', 'Rückenschmerzen', 'Migräne', 'Chronische Entzündungen', 'Nackenschmerzen'] },
-  { label: 'Muskel & Sport', symptoms: ['Muskelschwäche', 'Muskelkrämpfe', 'Langsame Regeneration', 'Leistungsabfall Sport', 'Ausdauerverlust', 'Muskelzittern', 'Schwere Beine'] },
-  { label: 'Immunsystem', symptoms: ['Immunschwäche', 'Häufige Erkältungen', 'Langsame Wundheilung', 'Häufige Infekte', 'Allergien', 'Autoimmunprobleme'] },
-  { label: 'Haut, Haare & Nägel', symptoms: ['Haarausfall', 'Hautprobleme', 'Trockene Haut', 'Brüchige Nägel', 'Akne', 'Faltenbildung', 'Schuppige Haut', 'Pigmentflecken'] },
-  { label: 'Verdauung', symptoms: ['Verdauungsprobleme', 'Blähungen', 'Durchfall', 'Verstopfung', 'Reizdarm', 'Nahrungsmittelunverträglichkeiten', 'Übelkeit', 'Sodbrennen'] },
-  { label: 'Herz & Kreislauf', symptoms: ['Herzrasen', 'Bluthochdruck', 'Schwindel', 'Kurzatmigkeit', 'Kalte Hände/Füße', 'Ohnmachtsgefühle'] },
-  { label: 'Knochen & Gelenke', symptoms: ['Osteoporose-Risiko', 'Gelenksteifheit', 'Knochenschmerzen', 'Arthrose-Beschwerden', 'Bandscheibenprobleme'] },
+type SymptomGroup = { sub: string; symptoms: string[] }
+type Category = { label: string; planned?: boolean; groups: SymptomGroup[] }
+
+const CATEGORIES: Category[] = [
+  {
+    label: 'Energie & Erschöpfung',
+    groups: [
+      { sub: 'Müdigkeit & Antrieb', symptoms: ['Morgenmüdigkeit', 'Antriebslosigkeit', 'Chronische Müdigkeit', 'Nachmittagstief'] },
+      { sub: 'Erschöpfung & Burnout', symptoms: ['Erschöpfung', 'Burnout-Gefühl', 'Stressbedingte Erschöpfung', 'Leistungsabfall'] },
+    ],
+  },
+  {
+    label: 'Schlaf & innere Unruhe',
+    groups: [
+      { sub: 'Schlafqualität', symptoms: ['Einschlafschwierigkeiten', 'Durchschlafschwierigkeiten', 'Unruhiger Schlaf', 'Schlafprobleme'] },
+      { sub: 'Anspannung', symptoms: ['Innere Unruhe', 'Nervosität', 'Stress', 'Gedankenkreisen'] },
+    ],
+  },
+  {
+    label: 'Stimmung & Psyche',
+    groups: [
+      { sub: 'Stimmung', symptoms: ['Depressive Verstimmung', 'Stimmungsschwankungen', 'Reizbarkeit'] },
+      { sub: 'Angst & Stress', symptoms: ['Angstzustände', 'Innere Anspannung', 'Cortisol-Stress'] },
+    ],
+  },
+  {
+    label: 'Konzentration & Gehirn',
+    groups: [
+      { sub: 'Kognition', symptoms: ['Konzentrationsprobleme', 'Vergesslichkeit', 'Brain Fog'] },
+      { sub: 'Mentale Leistung', symptoms: ['Geistige Erschöpfung', 'Fokusverlust'] },
+    ],
+  },
+  {
+    label: 'Immunsystem & Schilddrüse',
+    groups: [
+      { sub: 'Immunabwehr', symptoms: ['Immunschwäche', 'Häufige Erkältungen', 'Häufige Infekte', 'Langsame Wundheilung'] },
+      { sub: 'Schilddrüse & Stoffwechsel', symptoms: ['Schilddrüsenprobleme', 'Kältegefühl', 'Stoffwechselträgheit'] },
+    ],
+  },
+  {
+    label: 'Muskeln & Bewegung',
+    groups: [
+      { sub: 'Muskelfunktion', symptoms: ['Muskelkrämpfe', 'Muskelzittern', 'Muskelschwäche', 'Schwere Beine'] },
+      { sub: 'Sport & Regeneration', symptoms: ['Langsame Regeneration', 'Leistungsabfall Sport', 'Muskelkater'] },
+      { sub: 'Kopf', symptoms: ['Migräne', 'Spannungskopfschmerzen'] },
+    ],
+  },
+  {
+    label: 'Gelenke & Knochen',
+    groups: [
+      { sub: 'Gelenke', symptoms: ['Gelenkschmerzen', 'Gelenksteifheit', 'Arthrose-Beschwerden'] },
+      { sub: 'Knochen & Entzündung', symptoms: ['Osteoporose-Risiko', 'Schwache Knochen', 'Chronische Entzündungen'] },
+    ],
+  },
+  {
+    label: 'Haut, Haare & Nägel',
+    groups: [
+      { sub: 'Haare & Nägel', symptoms: ['Haarausfall', 'Brüchige Nägel', 'Dünner werdendes Haar'] },
+      { sub: 'Haut', symptoms: ['Akne', 'Unreine Haut', 'Trockene Haut', 'Faltenbildung'] },
+    ],
+  },
+  {
+    label: 'Verdauung & Darm',
+    groups: [
+      { sub: 'Verdauung', symptoms: ['Blähungen', 'Völlegefühl', 'Verstopfung', 'Durchfall'] },
+      { sub: 'Darmgesundheit', symptoms: ['Reizdarm', 'Nahrungsmittelunverträglichkeiten', 'Darmflora-Aufbau'] },
+    ],
+  },
+  {
+    label: 'Hormone & Zyklus',
+    planned: true,
+    groups: [
+      { sub: 'PMS & Zyklus', symptoms: ['PMS-Beschwerden', 'Zyklusbeschwerden', 'Stimmungstief vor der Periode', 'Krämpfe während der Periode'] },
+      { sub: 'Wechseljahre', symptoms: ['Hitzewallungen', 'Nachtschweiß', 'Hormonelle Umstellung'] },
+      { sub: 'Hormonbalance', symptoms: ['Wassereinlagerungen', 'Hormonell bedingte Müdigkeit'] },
+    ],
+  },
+  {
+    label: 'Libido & Vitalität',
+    planned: true,
+    groups: [
+      { sub: 'Libido', symptoms: ['Libidoverlust', 'Geringe sexuelle Lust'] },
+      { sub: 'Vitalität & Hormone', symptoms: ['Antriebsschwäche', 'Testosteron-Unterstützung', 'Allgemeine Vitalität'] },
+    ],
+  },
 ]
 
 function CapsuleIcon() {
@@ -43,6 +117,80 @@ function TypingDots() {
   return (
     <div className="typing-indicator" aria-label="Berater denkt nach">
       <span /><span /><span />
+    </div>
+  )
+}
+
+function getMessageText(message: ChatMessages[number]): string {
+  return message.parts
+    .filter((p) => p.type === 'text' && p.content)
+    .map((p) => (p as { content: string }).content)
+    .join('\n\n')
+}
+
+function MessageActions({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false)
+
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      // Fallback für ältere Browser
+      const ta = document.createElement('textarea')
+      ta.value = text
+      document.body.appendChild(ta)
+      ta.select()
+      document.execCommand('copy')
+      document.body.removeChild(ta)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
+  }
+
+  function handlePrint() {
+    const win = window.open('', '_blank', 'width=720,height=900')
+    if (!win) return
+    const safe = text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/\n/g, '<br>')
+    win.document.write(`
+      <html><head><title>HEC+ME Empfehlung</title>
+      <style>
+        body { font-family: Georgia, serif; max-width: 640px; margin: 40px auto; padding: 0 24px; color: #1a1a1a; line-height: 1.7; }
+        h1 { color: #C85A00; font-size: 22px; border-bottom: 2px solid #C85A00; padding-bottom: 10px; }
+        .meta { color: #888; font-size: 12px; margin-bottom: 24px; }
+        a { color: #C85A00; }
+        .foot { margin-top: 32px; padding-top: 16px; border-top: 1px solid #ddd; font-size: 11px; color: #888; }
+      </style></head>
+      <body>
+        <h1>HEC+ME · Deine Supplement-Empfehlung</h1>
+        <div class="meta">Erstellt am ${new Date().toLocaleDateString('de-DE')} · hecme.de</div>
+        <div>${safe}</div>
+        <div class="foot">Nur zur Information. Kein Ersatz für medizinische Beratung. Nahrungsergänzungsmittel sind kein Ersatz für eine ausgewogene Ernährung.</div>
+      </body></html>
+    `)
+    win.document.close()
+    setTimeout(() => win.print(), 300)
+  }
+
+  return (
+    <div className="message-actions">
+      <button className="msg-action-btn" onClick={handleCopy}>
+        {copied ? <Check size={13} strokeWidth={2.2} /> : <Copy size={13} strokeWidth={2} />}
+        {copied ? 'Kopiert' : 'Kopieren'}
+      </button>
+      <button className="msg-action-btn" onClick={handlePrint}>
+        <Printer size={13} strokeWidth={2} />
+        Drucken
+      </button>
+      <a className="msg-action-btn msg-action-shop" href="https://www.hecme.de/shop" target="_blank" rel="noopener">
+        <ShoppingBag size={13} strokeWidth={2} />
+        Zum Shop
+      </a>
     </div>
   )
 }
@@ -72,6 +220,9 @@ function Messages({ messages, isLoading }: { messages: ChatMessages; isLoading: 
                   <Streamdown>{part.content}</Streamdown>
                 </div>
               ) : null
+            )}
+            {message.role === 'assistant' && !isLoading && getMessageText(message).length > 40 && (
+              <MessageActions text={getMessageText(message)} />
             )}
           </div>
           {message.role === 'user' && (
@@ -113,7 +264,9 @@ function EmptyState({ onSelect }: { onSelect: (prompt: string) => void }) {
     )
   }
 
-  const currentSymptoms = CATEGORIES.find(c => c.label === activeCat)?.symptoms ?? []
+  const currentCategory = CATEGORIES.find(c => c.label === activeCat)
+  const currentGroups = currentCategory?.groups ?? []
+  const isPlanned = currentCategory?.planned ?? false
 
   return (
     <div className="empty-state">
@@ -125,16 +278,31 @@ function EmptyState({ onSelect }: { onSelect: (prompt: string) => void }) {
           Finde dein <em>perfektes</em><br />Supplement
         </h1>
         <p className="hero-sub">
-          Beschreibe deine Beschwerden oder wähle ein Ziel – du bekommst evidenzbasierte, auf dich zugeschnittene Empfehlungen.
+          Wähle deinen Weg: Suche nach einem <strong>Ziel</strong>, das du erreichen möchtest – oder nach konkreten <strong>Symptomen</strong>, die dich belasten.
         </p>
       </div>
 
-      <div className="mode-tabs">
-        <button className={`mode-tab ${mode === 'ziele' ? 'active' : ''}`} onClick={() => setMode('ziele')}>
-          Nach Ziel
+      {/* Modus-Umschalter: zwei klar getrennte Karten */}
+      <div className="mode-switch">
+        <button
+          className={`mode-card ${mode === 'ziele' ? 'active' : ''}`}
+          onClick={() => setMode('ziele')}
+        >
+          <Target size={20} strokeWidth={1.8} />
+          <div className="mode-card-text">
+            <span className="mode-card-title">Nach Ziel</span>
+            <span className="mode-card-sub">Was möchtest du erreichen?</span>
+          </div>
         </button>
-        <button className={`mode-tab ${mode === 'symptome' ? 'active' : ''}`} onClick={() => setMode('symptome')}>
-          Nach Symptomen
+        <button
+          className={`mode-card ${mode === 'symptome' ? 'active' : ''}`}
+          onClick={() => setMode('symptome')}
+        >
+          <Stethoscope size={20} strokeWidth={1.8} />
+          <div className="mode-card-text">
+            <span className="mode-card-title">Nach Symptomen</span>
+            <span className="mode-card-sub">Was belastet dich?</span>
+          </div>
         </button>
       </div>
 
@@ -156,28 +324,51 @@ function EmptyState({ onSelect }: { onSelect: (prompt: string) => void }) {
         </div>
       ) : (
         <div className="symptom-section">
-          <div className="cat-row">
-            {CATEGORIES.map((c) => (
-              <button
-                key={c.label}
-                className={`cat-pill ${activeCat === c.label ? 'active' : ''}`}
-                onClick={() => setActiveCat(c.label)}
-              >
-                {c.label}
-              </button>
-            ))}
+          {/* Schritt 1: Bereich (Überbegriff) wählen */}
+          <div className="symptom-step">
+            <span className="step-label"><span className="step-num">1</span> Bereich wählen</span>
+            <div className="cat-row">
+              {CATEGORIES.map((c) => (
+                <button
+                  key={c.label}
+                  className={`cat-pill ${activeCat === c.label ? 'active' : ''}`}
+                  onClick={() => setActiveCat(c.label)}
+                >
+                  {c.label}
+                  {c.planned && <span className="planned-dot" title="Produkte in Planung">bald</span>}
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="symptom-grid">
-            {currentSymptoms.map((s) => (
-              <button
-                key={s}
-                className={`symptom-chip ${selected.includes(s) ? 'selected' : ''}`}
-                onClick={() => toggleSymptom(s)}
-              >
-                {s}
-              </button>
-            ))}
+
+          {/* Schritt 2: konkrete Symptome wählen, gruppiert nach Unterbereich */}
+          <div className="symptom-step">
+            <span className="step-label"><span className="step-num">2</span> Symptome auswählen</span>
+            {isPlanned && (
+              <div className="planned-note">
+                Für diesen Bereich hat HEC+ME noch kein eigenes Produkt – du bekommst aber trotzdem eine fundierte Empfehlung, welcher Wirkstoff dir helfen könnte.
+              </div>
+            )}
+            <div className="symptom-groups">
+              {currentGroups.map((g) => (
+                <div key={g.sub} className="symptom-group">
+                  <span className="symptom-group-label">{g.sub}</span>
+                  <div className="symptom-grid">
+                    {g.symptoms.map((s) => (
+                      <button
+                        key={s}
+                        className={`symptom-chip ${selected.includes(s) ? 'selected' : ''}`}
+                        onClick={() => toggleSymptom(s)}
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
+
           {selected.length > 0 && (
             <div className="selected-bar">
               <span className="selected-count">{selected.length} ausgewählt:</span>
@@ -200,14 +391,16 @@ function EmptyState({ onSelect }: { onSelect: (prompt: string) => void }) {
   )
 }
 
-function ChatArea({ onActiveChange }: { onActiveChange: (active: boolean) => void }) {
+function ChatArea({ onActiveChange, onReset }: { onActiveChange: (active: boolean) => void; onReset: () => void }) {
   const [input, setInput] = useState('')
   const { messages, sendMessage, isLoading, stop } = useAIChat()
   const inputRef = useRef<HTMLInputElement>(null)
 
+  const hasMessages = messages.length > 0
+
   useEffect(() => {
-    onActiveChange(messages.length > 0)
-  }, [messages.length, onActiveChange])
+    onActiveChange(hasMessages)
+  }, [hasMessages, onActiveChange])
 
   function handleSend(text: string) {
     if (!text.trim() || isLoading) return
@@ -219,7 +412,7 @@ function ChatArea({ onActiveChange }: { onActiveChange: (active: boolean) => voi
   return (
     <>
       <main className="chat-main">
-        {messages.length === 0 ? (
+        {!hasMessages ? (
           <EmptyState onSelect={(p) => handleSend(p)} />
         ) : (
           <Messages messages={messages} isLoading={isLoading} />
@@ -236,32 +429,40 @@ function ChatArea({ onActiveChange }: { onActiveChange: (active: boolean) => voi
               </button>
             </div>
           )}
-          <form
-            onSubmit={(e) => {
-              e.preventDefault()
-              handleSend(input)
-            }}
-            className="input-form"
-          >
-            <input
-              ref={inputRef}
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Beschreibe deine Beschwerden oder frag nach einem Supplement…"
-              className="chat-input"
-              disabled={isLoading}
-              autoFocus
-            />
-            <button
-              type="submit"
-              disabled={!input.trim() || isLoading}
-              className="send-btn"
-              aria-label="Nachricht senden"
+          <div className="input-row">
+            {hasMessages && !isLoading && (
+              <button className="reset-inline-btn" onClick={onReset} title="Neue Suche starten">
+                <RotateCcw size={15} strokeWidth={2} />
+                <span>Neue Suche</span>
+              </button>
+            )}
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                handleSend(input)
+              }}
+              className="input-form"
             >
-              <Send size={16} strokeWidth={2} />
-            </button>
-          </form>
+              <input
+                ref={inputRef}
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Beschreibe deine Beschwerden oder frag nach einem Supplement…"
+                className="chat-input"
+                disabled={isLoading}
+                autoFocus
+              />
+              <button
+                type="submit"
+                disabled={!input.trim() || isLoading}
+                className="send-btn"
+                aria-label="Nachricht senden"
+              >
+                <Send size={16} strokeWidth={2} />
+              </button>
+            </form>
+          </div>
         </div>
       </footer>
     </>
@@ -281,18 +482,18 @@ function Home() {
     <div className="app-shell">
       <header className="app-header">
         <div className="header-inner">
-          <div className="brand">
+          <button className="brand brand-button" onClick={resetChat} title="Zurück zur Startseite">
             <div className="brand-icon" aria-hidden="true"><CapsuleIcon /></div>
             <div className="brand-text">
               <span className="brand-name">HEC<span className="brand-plus">+</span>ME</span>
               <span className="brand-tagline">Supplement Finder</span>
             </div>
-          </div>
+          </button>
           <div className="header-right">
             {chatActive && (
               <button className="reset-header-btn" onClick={resetChat}>
                 <RotateCcw size={13} strokeWidth={2} />
-                Neue Suche
+                <span>Neue Suche</span>
               </button>
             )}
             <div className="header-badge">Powered by Claude</div>
@@ -300,7 +501,7 @@ function Home() {
         </div>
       </header>
 
-      <ChatArea key={sessionKey} onActiveChange={setChatActive} />
+      <ChatArea key={sessionKey} onActiveChange={setChatActive} onReset={resetChat} />
     </div>
   )
 }
